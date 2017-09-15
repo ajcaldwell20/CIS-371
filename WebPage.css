@@ -1,0 +1,54 @@
+body {
+    background-color: transparent;
+    font-size: medium;
+    font-family: "Times New Roman";
+    width: 80%;
+    margin: auto;
+}
+
+#myImage {
+    float: right;
+    height: 30%;
+    width: 30%;
+    margin-bottom: 20px;
+    margin-left: 20px;
+}
+
+table p {
+    font-size: small;
+}
+
+table td {
+    width: auto;
+}
+
+table {
+    width: 100%;
+}
+
+.aboutme:nth-child(2) p {
+
+}
+
+#mainTable img {
+    display: block;
+    margin: auto;
+    height: 120px;
+    width: 175px;
+}
+
+.best {
+    font-style: italic;
+}
+
+#courseTable td:nth-child(odd) {
+    text-align: center;
+}
+
+#courseTable tr:nth-child(odd) {
+    background-color: skyblue;
+}
+
+#courseTable tr:nth-child(even) {
+    background-color: khaki;
+}
