@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>hw5</title>
+</head>
+<body>
+
+<h2>Adam Caldwell</h2>
+
+<table id="main">
+    <tbody>
+        <tr>
+            <td>
+                <div>
+                    <input type="file" id="json">
+                    <br>
+                    <input type="submit" id="submit" value="Upload File">
+                </div>
+            </td>
+            <td>
+                <div>
+                    <label>Name</label>
+                    <input class="check" type="text" id="name"
+                           required pattern="([A-Z][a-z]*){1}(\s{1}[A-Z][a-z]*)?(\s{1}[A-Z][a-z]*)?">
+                    <br>
+                    <label>Phone #</label>
+                    <input class="check" type="text" id="phone"
+                           required pattern="([0-9]{2}$">
+                    <br>
+                    <label>Age</label>
+                    <input class="check" type="text" id="age"
+                           required pattern="^[0-9]{2}$">
+                    <br>
+                    <input type="button" value="Insert" id="insert">
+                </div>
+            </td>
+            <td>
+                <div>
+                    <input type="button" value="Search DB" id="search">
+                    <input type="text" id="searchPhrase">
+                </div>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <div>
+                    <table id="table" border="1">
+                        <tbody>
+                            <tr>
+                                <th>Name</th>
+                                <th>Phone #</th>
+                                <th>Age</th>
+                            </tr>
+                        <tr>
+                            <td>Draymond Green</td>
+                            <td>555-8989</td>
+                            <td>24</td>
+                        </tr>
+                        <tr>
+                            <td>Tom Haas</td>
+                            <td>616-331-9999</td>
+                            <td>61</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </td>
+            <td>
+                <div>
+                    <h4 id="output"></h4>
+                    <table id="result" border="1"></table>
+                </div>
+            </td>
+        </tr>
+    </tbody>
+</table>
+
+<script src="https://www.gstatic.com/firebasejs/4.6.0/firebase.js"></script>
+<script>
+    // Initialize Firebase
+    let config = {
+        apiKey: "AIzaSyDdtO8UQ0YTnxbE2eC_5rcshXeIqi40P9c",
+        authDomain: "cis-371-hw5.firebaseapp.com",
+        databaseURL: "https://cis-371-hw5.firebaseio.com",
+        projectId: "cis-371-hw5",
+        storageBucket: "cis-371-hw5.appspot.com",
+        messagingSenderId: "273986296408"
+    };
+    firebase.initializeApp(config);
+    let rootRef = firebase.database().ref("friend");
+
+    let getElement = function(id) {
+        return document.getElementById(id);
+    };
+
+    //getElement('insert').disabled = true;
+    getElement('submit').addEventListener("click", function sub(temp) {
+        let fileReader = new FileReader();
+        let json = getElement('file').files[0];
+        fileReader.onload = (function (file) {
+            return function (temp) {
+                try {
+                    jsonObjects = JSON.parse(temp.target.result);
+                    for (let j in jsonObjects) {
+                        rootRef.push().set(jsonObjects[j]);
+                    }
+                }
+                catch (err) {
+                    alert('Error occurred while uploading JSON file: ' + err);
+                }
+            }
+        })(json);
+        fileReader.readAsText(json);
+        temp.preventDefault();
+    }, false);
+
+    rootRef.on("child_added", snap=> {
+        let object = snap.val();
+        $('#table'.append(addRow(snap.val())));
+    });
+
+    function addRow(object) {
+        let phoneNumber = (object.phone.length == 7) ?
+            object.phone.replace(/(\d{3})(\d{4})/, "$1-$2") :
+            object.phone.replace(/^(\d{3})(\d{3})?(\d{4})/, "$1-$2-$3");
+        let row = "<tr><td>" + object.name + "</td><td>" + phoneNumber +
+            "</td><td>" + object.age + "</td></tr>";
+        return row;
+    }
+
+    getElement('insert').addEventListener("click", function sub(temp) {
+        rootRef.push({
+            name: getElement('name').value,
+            phone: getElement('phone').value,
+            age: getElement('age').value
+        });
+        temp.preventDefault();
+    });
+
+    getElement('search').addEventListener("click", function sub(temp) {
+        $('#result > tr'.remove();)
+        let count = 0;
+        rootRef.once('value').then(function(snap) {
+            snap.forEach((child)=>{
+                if (child.val().name.toLowerCase().includes($('#searchPhrase').val().toLowerCase())) {
+                    $('result').append(addRow(child.val()));
+                    count++
+                }
+            });
+            if (count <= 0) {
+                getElement('output').innerHTML = "No data found.";
+            }
+            else {
+                getElement('output').innerHTML = count + " results found";
+            }
+        });
+        temp.preventDefault();
+    });
+
+    $('#searchPhrase').keypress((temp)=>{
+        if (temp.keyCode == 13) {
+            $('#search').click();
+        }
+    });
+
+</script>
+
+</body>
+</html>
